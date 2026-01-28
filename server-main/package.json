@@ -1,0 +1,30 @@
+{
+  "name": "server-main",
+  "version": "1.0.0",
+  "description": "Servidor principal para a gestão de tickets",
+  "keywords": [
+    "javascript",
+    "tickets",
+    "webhook"
+  ],
+  "homepage": "https://github.com/Gocaru/gestor-tickets-webhooks#readme",
+  "bugs": {
+    "url": "https://github.com/Gocaru/gestor-tickets-webhooks/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gocaru/gestor-tickets-webhooks.git"
+  },
+  "license": "ISC",
+  "author": "Gonçalo Russo, Larissa Silva, Filipa Veiga, Filipe Nunes",
+  "type": "module",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3"
+  }
+}
