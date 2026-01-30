@@ -62,39 +62,20 @@ export function importTicketsFromCsv(csvFilePath) {
         processed++;
 
         const ticket = {
-          incidentId: row.Incident_ID,
-
           ciName: row.CI_Name || null,
-          ciCat: row.CI_Cat || null,
+          ciCat: row.CI_Cat ||  null,
           ciSubcat: row.CI_Subcat || null,
-          wbs: row.WBS || null,
-          category: row.Category || null,
 
           status: row.Status || null,
           impact: row.Impact || null,
           urgency: row.Urgency || null,
           priority: row.Priority || null,
 
-          numberCnt: parseInteger(row.number_cnt),
-          kbNumber: row.KB_number || null,
-          alertStatus: row.Alert_Status || null,
-          noOfReassignments: parseInteger(row.No_of_Reassignments),
-
           openTime: parseDateToIso(row.Open_Time),
-          reopenTime: parseDateToIso(row.Reopen_Time),
           resolvedTime: parseDateToIso(row.Resolved_Time),
-          closeTime: parseDateToIso(row.Close_Time),
-
-          handleTimeHrs: parseHandleTimeToNumber(row.Handle_Time_hrs),
-
-          closureCode: row.Closure_Code || null,
-
-          noOfRelatedInteractions: parseInteger(row.No_of_Related_Interactions),
-          relatedInteraction: row.Related_Interaction || null,
-          noOfRelatedIncidents: parseInteger(row.No_of_Related_Incidents),
-          noOfRelatedChanges: parseInteger(row.No_of_Related_Changes),
-          relatedChange: row.Related_Change || null
+          closeTime: parseDateToIso(row.Close_Time)
         };
+
 
         const changes = await insertTicket(ticket);
         if (changes === 1) inserted++;
