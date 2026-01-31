@@ -16,7 +16,9 @@ export function initDb() {
 
       openTime TEXT,
       resolvedTime TEXT,
-      closeTime TEXT
+      closeTime TEXT,
+
+      archived INTEGER DEFAULT 0
     )
   `;
 
@@ -26,7 +28,7 @@ export function initDb() {
         console.error('Erro a criar tabela tickets:', err.message);
         return reject(err);
       }
-      console.log('Tabela tickets pronta (schema reduzido).');
+      console.log('Tabela tickets pronta (schema final).');
       resolve();
     });
   });
