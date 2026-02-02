@@ -10,6 +10,7 @@ import ticketsRoutes from './routes/ticketsRoutes.js';
 import { initDb } from './db/initDb.js';
 import { getDb } from './db/database.js';
 import { importTicketsFromCsv } from './services/csvImportService.js';
+import webhooksRoutes from './routes/webhooksRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +19,7 @@ app.use(express.json());
 
 app.use('/health', healthRoutes);
 app.use('/api/tickets', ticketsRoutes);
+app.use('/api/webhooks', webhooksRoutes);
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);

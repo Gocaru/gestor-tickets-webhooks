@@ -12,17 +12,26 @@ import {
   getStatsByCiCatService,
 } from '../services/ticketsStatsService.js';
 
+// 👉 Webhooks dispatcher
+import { notifyWebhooks } from '../services/webhookDispatcher.js';
 
+/**
+ * Criar ticket
+ * Dispara webhook: ticket.created
+ */
 export const createTicket = async (req, res) => {
   try {
     const ticketData = req.body;
 
-    // validação mínima (pode expandir depois)
     if (!ticketData || typeof ticketData !== 'object') {
       return res.status(400).json({ message: 'Invalid request body' });
     }
 
     const created = await createTicketService(ticketData);
+
+    // 🔔 notificar webhooks (não bloquear resposta)
+    notifyWebhooks('ticket.created', created).catch(console.error);
+
     return res.status(201).json(created);
   } catch (err) {
     console.error('Erro ao criar ticket:', err.message);
@@ -30,6 +39,9 @@ export const createTicket = async (req, res) => {
   }
 };
 
+/**
+ * Listar tickets (com paginação e filtros)
+ */
 export const getTickets = async (req, res) => {
   try {
     const result = await getTicketsService(req.query);
@@ -40,6 +52,9 @@ export const getTickets = async (req, res) => {
   }
 };
 
+/**
+ * Obter ticket por ID
+ */
 export const getTicketById = async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -61,6 +76,10 @@ export const getTicketById = async (req, res) => {
   }
 };
 
+/**
+ * Atualizar ticket
+ * Dispara webhook: ticket.updated
+ */
 export const updateTicket = async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -81,6 +100,9 @@ export const updateTicket = async (req, res) => {
       return res.status(404).json({ message: 'Ticket not found' });
     }
 
+    // 🔔 notificar webhooks
+    notifyWebhooks('ticket.updated', updated).catch(console.error);
+
     return res.status(200).json(updated);
   } catch (err) {
     console.error('Erro ao atualizar ticket:', err.message);
@@ -88,6 +110,10 @@ export const updateTicket = async (req, res) => {
   }
 };
 
+/**
+ * Arquivar ticket (DELETE)
+ * Dispara webhook: ticket.archived
+ */
 export const archiveTicket = async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -102,6 +128,9 @@ export const archiveTicket = async (req, res) => {
       return res.status(404).json({ message: 'Ticket not found' });
     }
 
+    // 🔔 notificar webhooks
+    notifyWebhooks('ticket.archived', archived).catch(console.error);
+
     return res.status(200).json({
       message: 'Ticket archived',
       ticket: archived,
@@ -112,6 +141,9 @@ export const archiveTicket = async (req, res) => {
   }
 };
 
+/**
+ * Estatísticas por status
+ */
 export const getStatsByStatus = async (req, res) => {
   try {
     const stats = await getStatsByStatusService();
@@ -122,6 +154,9 @@ export const getStatsByStatus = async (req, res) => {
   }
 };
 
+/**
+ * Estatísticas por prioridade
+ */
 export const getStatsByPriority = async (req, res) => {
   try {
     const stats = await getStatsByPriorityService();
@@ -132,6 +167,9 @@ export const getStatsByPriority = async (req, res) => {
   }
 };
 
+/**
+ * Estatísticas por categoria CI
+ */
 export const getStatsByCiCat = async (req, res) => {
   try {
     const stats = await getStatsByCiCatService();
@@ -141,4 +179,3 @@ export const getStatsByCiCat = async (req, res) => {
     return res.status(500).json({ message: 'Error getting stats by ciCat' });
   }
 };
-
