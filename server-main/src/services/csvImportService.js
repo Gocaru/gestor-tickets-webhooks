@@ -2,31 +2,6 @@ import fs from 'fs';
 import csv from 'csv-parser';
 import { insertTicket } from '../repositories/ticketsRepository.js';
 
-function parseInteger(value) {
-  if (value === undefined || value === null) return null;
-  const n = parseInt(String(value).trim(), 10);
-  return Number.isNaN(n) ? null : n;
-}
-
-function parseHandleTimeToNumber(value) {
-  if (!value) return null;
-
-  // Ex.: "4,35,47,86,389" -> 4.354786389
-  const raw = String(value).replace(/"/g, '').trim();
-  const parts = raw.split(',');
-
-  if (parts.length === 1) {
-    const n = Number(parts[0]);
-    return Number.isNaN(n) ? null : n;
-  }
-
-  const intPart = parts[0];
-  const decPart = parts.slice(1).join('');
-  const n = Number(intPart + '.' + decPart);
-
-  return Number.isNaN(n) ? null : n;
-}
-
 function parseDateToIso(value) {
   // Formato no CSV: M/D/YYYY HH:mm
   if (!value) return null;
@@ -48,7 +23,7 @@ function parseDateToIso(value) {
   return `${year}-${month}-${day}T${timePart}:00`;
 }
 
-export function importTicketsFromCsv(csvFilePath) {
+export function importTicketsFromCsv(db, csvFilePath) {
   return new Promise((resolve, reject) => {
     let processed = 0;
     let inserted = 0;
@@ -63,7 +38,7 @@ export function importTicketsFromCsv(csvFilePath) {
 
         const ticket = {
           ciName: row.CI_Name || null,
-          ciCat: row.CI_Cat ||  null,
+          ciCat: row.CI_Cat || null,
           ciSubcat: row.CI_Subcat || null,
 
           status: row.Status || null,
@@ -73,11 +48,10 @@ export function importTicketsFromCsv(csvFilePath) {
 
           openTime: parseDateToIso(row.Open_Time),
           resolvedTime: parseDateToIso(row.Resolved_Time),
-          closeTime: parseDateToIso(row.Close_Time)
+          closeTime: parseDateToIso(row.Close_Time),
         };
 
-
-        const changes = await insertTicket(ticket);
+        const changes = await insertTicket(db, ticket);
         if (changes === 1) inserted++;
 
         stream.resume();
@@ -90,3 +64,4 @@ export function importTicketsFromCsv(csvFilePath) {
     stream.on('error', (err) => reject(err));
   });
 }
+

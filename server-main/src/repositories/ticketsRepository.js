@@ -1,7 +1,13 @@
-import { db } from '../db/database.js';
+import { db as defaultDb } from '../db/database.js';
 
 // Método para o import CSV
-export function insertTicket(ticket) {
+// ✅ Suporta:
+//   insertTicket(ticket) -> usa defaultDb (compatível com o que tinhas)
+//   insertTicket(db, ticket) -> usa db passada (recomendado p/ import)
+export function insertTicket(dbOrTicket, maybeTicket) {
+  const usingDb = maybeTicket ? dbOrTicket : defaultDb;
+  const ticket = maybeTicket ? maybeTicket : dbOrTicket;
+
   return new Promise((resolve, reject) => {
     const sql = `
       INSERT OR IGNORE INTO tickets (
@@ -18,7 +24,7 @@ export function insertTicket(ticket) {
       ticket.openTime, ticket.resolvedTime, ticket.closeTime
     ];
 
-    db.run(sql, params, function (err) {
+    usingDb.run(sql, params, function (err) {
       if (err) return reject(err);
       resolve(this.changes);
     });
@@ -52,7 +58,7 @@ export function createTicket(ticket) {
       ticket.closeTime || null
     ];
 
-    db.run(sql, params, function (err) {
+    defaultDb.run(sql, params, function (err) {
       if (err) return reject(err);
       resolve(this.lastID);
     });
@@ -62,7 +68,7 @@ export function createTicket(ticket) {
 export function getTicketById(id) {
   return new Promise((resolve, reject) => {
     const sql = 'SELECT * FROM tickets WHERE id = ?';
-    db.get(sql, [id], (err, row) => {
+    defaultDb.get(sql, [id], (err, row) => {
       if (err) return reject(err);
       resolve(row || null);
     });
@@ -101,7 +107,7 @@ export function updateTicket(id, updated) {
       id
     ];
 
-    db.run(sql, params, function (err) {
+    defaultDb.run(sql, params, function (err) {
       if (err) return reject(err);
       resolve(this.changes);
     });
@@ -111,7 +117,7 @@ export function updateTicket(id, updated) {
 export function archiveTicket(id) {
   return new Promise((resolve, reject) => {
     const sql = 'UPDATE tickets SET archived = 1 WHERE id = ?';
-    db.run(sql, [id], function (err) {
+    defaultDb.run(sql, [id], function (err) {
       if (err) return reject(err);
       resolve(this.changes);
     });
@@ -128,7 +134,7 @@ export function listTickets(whereSql, params, limit, offset) {
       LIMIT ? OFFSET ?
     `;
 
-    db.all(sql, [...params, limit, offset], (err, rows) => {
+    defaultDb.all(sql, [...params, limit, offset], (err, rows) => {
       if (err) return reject(err);
       resolve(rows);
     });
@@ -143,9 +149,10 @@ export function countTickets(whereSql, params) {
       ${whereSql}
     `;
 
-    db.get(sql, params, (err, row) => {
+    defaultDb.get(sql, params, (err, row) => {
       if (err) return reject(err);
       resolve(row.total);
     });
   });
 }
+
