@@ -2,7 +2,7 @@ import { db as defaultDb } from '../db/database.js';
 
 // Método para o import CSV
 // ✅ Suporta:
-//   insertTicket(ticket) -> usa defaultDb (compatível com o que tinhas)
+//   insertTicket(ticket) -> usa defaultDb
 //   insertTicket(db, ticket) -> usa db passada (recomendado p/ import)
 export function insertTicket(dbOrTicket, maybeTicket) {
   const usingDb = maybeTicket ? dbOrTicket : defaultDb;

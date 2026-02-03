@@ -82,7 +82,26 @@ export const updateTicketService = async (id, ticketData) => {
   const changes = await updateTicket(id, updated);
   if (!changes) return null;
 
-  return await getTicketById(id);
+  const after = await getTicketById(id);
+  if (!after) return null;
+
+  // Contexto útil para webhooks: antes/depois + campos alterados
+  const changedFields = {};
+  Object.keys(after).forEach((key) => {
+    // Ignorar alterações técnicas se existirem no futuro
+    const beforeValue = existing[key];
+    const afterValue = after[key];
+
+    if (beforeValue !== afterValue) {
+      changedFields[key] = { from: beforeValue, to: afterValue };
+    }
+  });
+
+  return {
+    before: existing,
+    after,
+    changes: changedFields,
+  };
 };
 
 /**
