@@ -1,4 +1,5 @@
 import { listActiveWebhooksByEvent } from '../repositories/webhooksRepository.js';
+import crypto from 'crypto';
 
 export async function notifyWebhooks(event, data) {
   const hooks = await listActiveWebhooksByEvent(event);
@@ -11,12 +12,24 @@ export async function notifyWebhooks(event, data) {
     data,
   };
 
+  // Segurança (chave secreta partilhada):
+  // Assina o corpo do webhook com HMAC-SHA256.
+  // O servidor recetor valida a assinatura usando a mesma WEBHOOK_SECRET.
+  const secret = (process.env.WEBHOOK_SECRET || '').trim();
+  const bodyString = JSON.stringify(payload);
+  const signature = secret
+    ? `sha256=${crypto.createHmac('sha256', secret).update(bodyString).digest('hex')}`
+    : '';
+
   const results = await Promise.allSettled(
     hooks.map(async (h) => {
       const res = await fetch(h.url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(signature ? { 'X-Webhook-Signature': signature } : {}),
+        },
+        body: bodyString,
       });
 
       if (!res.ok) {

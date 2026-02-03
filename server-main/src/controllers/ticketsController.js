@@ -94,14 +94,21 @@ export const updateTicket = async (req, res) => {
       return res.status(400).json({ message: 'Invalid request body' });
     }
 
-    const updated = await updateTicketService(id, ticketData);
+    const result = await updateTicketService(id, ticketData);
 
-    if (!updated) {
+    if (!result) {
       return res.status(404).json({ message: 'Ticket not found' });
     }
 
-    // 🔔 notificar webhooks
-    notifyWebhooks('ticket.updated', updated).catch(console.error);
+    const updated = result.after;
+
+    // 🔔 notificar webhooks (com contexto útil)
+    notifyWebhooks('ticket.updated', {
+      ticketId: id,
+      before: result.before,
+      after: result.after,
+      changes: result.changes,
+    }).catch(console.error);
 
     return res.status(200).json(updated);
   } catch (err) {

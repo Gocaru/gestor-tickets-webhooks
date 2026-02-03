@@ -21,4 +21,12 @@ Projeto académico em Node.js com dois servidores independentes:
 (descrição a completar)
 
 ## Segurança
-Utilização de variável de ambiente WEBHOOK_SECRET
+### Chave secreta partilhada (WEBHOOK_SECRET)
+
+Para garantir que as notificações (webhooks) **provêm do servidor principal**, o projeto usa uma chave secreta partilhada (`WEBHOOK_SECRET`) e uma assinatura HMAC.
+
+- O **servidor principal** assina o corpo do webhook com **HMAC-SHA256** e envia o header:
+  - `X-Webhook-Signature: sha256=<hex>`
+- O **servidor secundário** recalcula a assinatura com a mesma `WEBHOOK_SECRET` e **rejeita** pedidos com assinatura inválida (`401`).
+
+> Nota: Todos os segredos ficam em ficheiros `.env` (ou variáveis de ambiente) e não devem ser hardcoded.

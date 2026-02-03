@@ -1,13 +1,46 @@
 import express from 'express';
+import 'dotenv/config';
+import crypto from 'crypto';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(express.json());
+// Guardar o corpo bruto para permitir validação de assinatura (HMAC)
+app.use(
+  express.json({
+    verify: (req, _res, buf) => {
+      req.rawBody = buf;
+    },
+  })
+);
 
 const receivedWebhooks = [];
 
 app.post('/webhooks', (req, res) => {
+  // Segurança: validar que o webhook foi assinado com a mesma WEBHOOK_SECRET
+  const secret = (process.env.WEBHOOK_SECRET || '').trim();
+  const signatureHeader = (req.get('X-Webhook-Signature') || '').trim();
+
+  if (!secret) {
+    // Se não houver secret configurada, rejeita para evitar aceitar notificações de qualquer origem.
+    return res.status(500).json({ ok: false, message: 'WEBHOOK_SECRET not configured' });
+  }
+
+  const expected = `sha256=${crypto
+    .createHmac('sha256', secret)
+    .update(req.rawBody || Buffer.from(''))
+    .digest('hex')}`;
+
+  // Comparação em tempo constante para reduzir risco de timing attacks
+  const valid =
+    signatureHeader.length === expected.length &&
+    crypto.timingSafeEqual(Buffer.from(signatureHeader), Buffer.from(expected));
+
+  if (!valid) {
+    console.warn('⚠️  Webhook rejeitado: assinatura inválida.');
+    return res.status(401).json({ ok: false, message: 'Invalid webhook signature' });
+  }
+
   const payload = req.body;
 
   receivedWebhooks.unshift({
