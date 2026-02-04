@@ -1,0 +1,571 @@
+openapi: 3.0.3
+info:
+  title: Gestor de Tickets - Servidor Principal
+  version: 1.0.0
+  description: API REST para gestão de tickets e registo de webhooks.
+servers:
+  - url: http://localhost:3000
+paths:
+  /health:
+    get:
+      summary: Healthcheck do servidor
+      tags: [Health]
+      responses:
+        '200':
+          description: Servidor online
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '500':
+          description: Erro interno
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/tickets:
+    post:
+      summary: Criar ticket
+      tags: [Tickets]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketCreate'
+      responses:
+        '201':
+          description: Ticket criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '400':
+          description: Pedido inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erro interno
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      summary: Listar tickets com filtros e paginação
+      tags: [Tickets]
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+          description: Número máximo de resultados
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Número de registos a saltar
+        - in: query
+          name: archived
+          schema:
+            type: string
+            enum: ['0', '1']
+            default: '0'
+          description: "1 para incluir arquivados, 0 para apenas ativos"
+        - in: query
+          name: status
+          schema:
+            type: string
+          description: Filtro por status
+        - in: query
+          name: priority
+          schema:
+            type: string
+          description: Filtro por prioridade
+        - in: query
+          name: impact
+          schema:
+            type: string
+          description: Filtro por impacto
+        - in: query
+          name: urgency
+          schema:
+            type: string
+          description: Filtro por urgência
+        - in: query
+          name: ciCat
+          schema:
+            type: string
+          description: Filtro por categoria CI
+        - in: query
+          name: ciSubcat
+          schema:
+            type: string
+          description: Filtro por subcategoria CI
+      responses:
+        '200':
+          description: Lista de tickets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketListResponse'
+        '500':
+          description: Erro interno
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/tickets/{id}:
+    get:
+      summary: Obter ticket por ID
+      tags: [Tickets]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Ticket encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '400':
+          description: ID inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ticket não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erro interno
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Atualizar ticket
+      tags: [Tickets]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketUpdate'
+      responses:
+        '200':
+          description: Ticket atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '400':
+          description: Pedido inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ticket não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erro interno
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Arquivar ticket
+      tags: [Tickets]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Ticket arquivado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketArchiveResponse'
+        '400':
+          description: ID inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Ticket não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erro interno
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/tickets/stats/by-status:
+    get:
+      summary: Estatísticas por status
+      tags: [Stats]
+      responses:
+        '200':
+          description: Estatísticas por status
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StatsByStatusItem'
+        '500':
+          description: Erro interno
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/tickets/stats/by-priority:
+    get:
+      summary: Estatísticas por prioridade
+      tags: [Stats]
+      responses:
+        '200':
+          description: Estatísticas por prioridade
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StatsByPriorityItem'
+        '500':
+          description: Erro interno
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/tickets/stats/by-ciCat:
+    get:
+      summary: Estatísticas por categoria CI
+      tags: [Stats]
+      responses:
+        '200':
+          description: Estatísticas por categoria CI
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StatsByCiCatItem'
+        '500':
+          description: Erro interno
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/webhooks:
+    post:
+      summary: Registar webhook
+      tags: [Webhooks]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookCreateRequest'
+      responses:
+        '201':
+          description: Webhook registado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookCreateResponse'
+        '400':
+          description: Pedido inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erro interno
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      summary: Listar webhooks registados
+      tags: [Webhooks]
+      responses:
+        '200':
+          description: Lista de webhooks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WebhookListItem'
+        '500':
+          description: Erro interno
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      additionalProperties: false
+    HealthResponse:
+      type: object
+      properties:
+        estado:
+          type: string
+        porta:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+        servico:
+          type: string
+        mensagem:
+          type: string
+      required: [estado, porta, timestamp, servico, mensagem]
+      additionalProperties: false
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: integer
+        ciName:
+          type: string
+          nullable: true
+        ciCat:
+          type: string
+          nullable: true
+        ciSubcat:
+          type: string
+          nullable: true
+        status:
+          type: string
+        impact:
+          type: string
+          nullable: true
+        urgency:
+          type: string
+          nullable: true
+        priority:
+          type: string
+          nullable: true
+        openTime:
+          type: string
+          format: date-time
+        resolvedTime:
+          type: string
+          format: date-time
+          nullable: true
+        closeTime:
+          type: string
+          format: date-time
+          nullable: true
+        archived:
+          type: integer
+          enum: [0, 1]
+      required: [id, status, openTime, archived]
+      additionalProperties: false
+    TicketCreate:
+      type: object
+      properties:
+        ciName:
+          type: string
+          nullable: true
+        ciCat:
+          type: string
+          nullable: true
+        ciSubcat:
+          type: string
+          nullable: true
+        status:
+          type: string
+        impact:
+          type: string
+          nullable: true
+        urgency:
+          type: string
+          nullable: true
+        priority:
+          type: string
+          nullable: true
+        openTime:
+          type: string
+          format: date-time
+        resolvedTime:
+          type: string
+          format: date-time
+          nullable: true
+        closeTime:
+          type: string
+          format: date-time
+          nullable: true
+      additionalProperties: false
+    TicketUpdate:
+      type: object
+      properties:
+        ciName:
+          type: string
+          nullable: true
+        ciCat:
+          type: string
+          nullable: true
+        ciSubcat:
+          type: string
+          nullable: true
+        status:
+          type: string
+        impact:
+          type: string
+          nullable: true
+        urgency:
+          type: string
+          nullable: true
+        priority:
+          type: string
+          nullable: true
+        openTime:
+          type: string
+          format: date-time
+        resolvedTime:
+          type: string
+          format: date-time
+          nullable: true
+        closeTime:
+          type: string
+          format: date-time
+          nullable: true
+      additionalProperties: false
+    TicketListResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+        tickets:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ticket'
+      required: [total, limit, offset, tickets]
+      additionalProperties: false
+    TicketArchiveResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        ticket:
+          $ref: '#/components/schemas/Ticket'
+      required: [message, ticket]
+      additionalProperties: false
+    StatsByStatusItem:
+      type: object
+      properties:
+        status:
+          type: string
+          nullable: true
+        total:
+          type: integer
+      required: [status, total]
+      additionalProperties: false
+    StatsByPriorityItem:
+      type: object
+      properties:
+        priority:
+          type: string
+          nullable: true
+        total:
+          type: integer
+      required: [priority, total]
+      additionalProperties: false
+    StatsByCiCatItem:
+      type: object
+      properties:
+        ciCat:
+          type: string
+          nullable: true
+        total:
+          type: integer
+      required: [ciCat, total]
+      additionalProperties: false
+    WebhookCreateRequest:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+        event:
+          type: string
+          enum: [ticket.created, ticket.updated, ticket.archived]
+      required: [url, event]
+      additionalProperties: false
+    WebhookCreateResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        id:
+          type: integer
+          description: 0 quando o registo é ignorado por duplicado
+        url:
+          type: string
+          format: uri
+        event:
+          type: string
+      required: [ok, id, url, event]
+      additionalProperties: false
+    WebhookListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        url:
+          type: string
+          format: uri
+        event:
+          type: string
+        active:
+          type: integer
+          enum: [0, 1]
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, url, event, active, createdAt]
+      additionalProperties: false
