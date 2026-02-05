@@ -1,3 +1,4 @@
+import cors from "cors";
 import express from 'express';
 import 'dotenv/config';
 
@@ -16,6 +17,16 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+
+app.use(cors({
+  origin: [
+    "https://editor.swagger.io",
+    "https://petstore.swagger.io"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Accept"]
+}));
+
 
 app.use('/health', healthRoutes);
 app.use('/api/tickets', ticketsRoutes);
