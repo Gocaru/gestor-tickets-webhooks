@@ -1,23 +1,28 @@
-import { db } from '../db/database.js';
+// src/repositories/ticketsStatsRepository.js
 
-export function getStatsByStatus() {
+import { db as defaultDb } from '../db/database.js';
+import { dbAll } from '../db/sqliteAsync.js';
+
+/**
+ * Estatísticas por status (exclui tickets arquivados).
+ */
+export async function getStatsByStatus() {
   const sql = `
     SELECT status, COUNT(*) AS total
     FROM tickets
-    WHERE COALESCE(archived, 0) = 0 -- exclui tickets arquivados
+    WHERE COALESCE(archived, 0) = 0
     GROUP BY status
     ORDER BY total DESC
   `;
 
-  return new Promise((resolve, reject) => {
-    db.all(sql, [], (err, rows) => {
-      if (err) return reject(err);
-      resolve(rows);
-    });
-  });
+  const rows = await dbAll(defaultDb, sql, []);
+  return rows;
 }
 
-export function getStatsByPriority() {
+/**
+ * Estatísticas por prioridade (exclui tickets arquivados).
+ */
+export async function getStatsByPriority() {
   const sql = `
     SELECT priority, COUNT(*) AS total
     FROM tickets
@@ -26,15 +31,14 @@ export function getStatsByPriority() {
     ORDER BY total DESC
   `;
 
-  return new Promise((resolve, reject) => {
-    db.all(sql, [], (err, rows) => {
-      if (err) return reject(err);
-      resolve(rows);
-    });
-  });
+  const rows = await dbAll(defaultDb, sql, []);
+  return rows;
 }
 
-export function getStatsByCiCat() {
+/**
+ * Estatísticas por categoria CI (exclui tickets arquivados).
+ */
+export async function getStatsByCiCat() {
   const sql = `
     SELECT ciCat, COUNT(*) AS total
     FROM tickets
@@ -43,10 +47,6 @@ export function getStatsByCiCat() {
     ORDER BY total DESC
   `;
 
-  return new Promise((resolve, reject) => {
-    db.all(sql, [], (err, rows) => {
-      if (err) return reject(err);
-      resolve(rows);
-    });
-  });
+  const rows = await dbAll(defaultDb, sql, []);
+  return rows;
 }

@@ -1,158 +1,172 @@
-import { db as defaultDb } from '../db/database.js';
+// src/repositories/ticketsRepository.js
 
-// Método para o import CSV
-// ✅ Suporta:
-//   insertTicket(ticket) -> usa defaultDb
-//   insertTicket(db, ticket) -> usa db passada (recomendado p/ import)
-export function insertTicket(dbOrTicket, maybeTicket) {
+import { db as defaultDb } from '../db/database.js';
+import { dbRun, dbGet, dbAll } from '../db/sqliteAsync.js';
+
+/**
+ * Método para o import CSV
+ * ✅ Suporta:
+ *   insertTicket(ticket) -> usa defaultDb
+ *   insertTicket(db, ticket) -> usa db passada (recomendado p/ import)
+ *
+ * Retorna o número de alterações (changes).
+ */
+export async function insertTicket(dbOrTicket, maybeTicket) {
   const usingDb = maybeTicket ? dbOrTicket : defaultDb;
   const ticket = maybeTicket ? maybeTicket : dbOrTicket;
 
-  return new Promise((resolve, reject) => {
-    const sql = `
-      INSERT OR IGNORE INTO tickets (
-        ciName, ciCat, ciSubcat,
-        status, impact, urgency, priority,
-        openTime, resolvedTime, closeTime
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
+  const sql = `
+    INSERT OR IGNORE INTO tickets (
+      ciName, ciCat, ciSubcat,
+      status, impact, urgency, priority,
+      openTime, resolvedTime, closeTime
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
 
-    const params = [
-      ticket.ciName, ticket.ciCat, ticket.ciSubcat,
-      ticket.status, ticket.impact, ticket.urgency, ticket.priority,
-      ticket.openTime, ticket.resolvedTime, ticket.closeTime
-    ];
+  const params = [
+    ticket.ciName,
+    ticket.ciCat,
+    ticket.ciSubcat,
+    ticket.status,
+    ticket.impact,
+    ticket.urgency,
+    ticket.priority,
+    ticket.openTime,
+    ticket.resolvedTime,
+    ticket.closeTime
+  ];
 
-    usingDb.run(sql, params, function (err) {
-      if (err) return reject(err);
-      resolve(this.changes);
-    });
-  });
+  const result = await dbRun(usingDb, sql, params);
+  return result.changes;
 }
 
-// Métodos para a API
+/**
+ * Criar ticket (API)
+ * Retorna o ID criado (lastID).
+ */
+export async function createTicket(ticket) {
+  const sql = `
+    INSERT INTO tickets (
+      ciName, ciCat, ciSubcat,
+      status, impact, urgency, priority,
+      openTime, resolvedTime, closeTime,
+      archived
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+  `;
 
-export function createTicket(ticket) {
-  return new Promise((resolve, reject) => {
-    const sql = `
-      INSERT INTO tickets (
-        ciName, ciCat, ciSubcat,
-        status, impact, urgency, priority,
-        openTime, resolvedTime, closeTime,
-        archived
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
-    `;
+  const params = [
+    ticket.ciName || null,
+    ticket.ciCat || null,
+    ticket.ciSubcat || null,
+    ticket.status || 'Open',
+    ticket.impact || null,
+    ticket.urgency || null,
+    ticket.priority || null,
+    ticket.openTime || new Date().toISOString(),
+    ticket.resolvedTime || null,
+    ticket.closeTime || null
+  ];
 
-    const params = [
-      ticket.ciName || null,
-      ticket.ciCat || null,
-      ticket.ciSubcat || null,
-      ticket.status || 'Open',
-      ticket.impact || null,
-      ticket.urgency || null,
-      ticket.priority || null,
-      ticket.openTime || new Date().toISOString(),
-      ticket.resolvedTime || null,
-      ticket.closeTime || null
-    ];
-
-    defaultDb.run(sql, params, function (err) {
-      if (err) return reject(err);
-      resolve(this.lastID);
-    });
-  });
+  const result = await dbRun(defaultDb, sql, params);
+  return result.lastID;
 }
 
-export function getTicketById(id) {
-  return new Promise((resolve, reject) => {
-    const sql = 'SELECT * FROM tickets WHERE id = ?';
-    defaultDb.get(sql, [id], (err, row) => {
-      if (err) return reject(err);
-      resolve(row || null);
-    });
-  });
+/**
+ * Obter ticket por ID.
+ * Retorna o objeto ou null.
+ */
+export async function getTicketById(id) {
+  const sql = 'SELECT * FROM tickets WHERE id = ?';
+  const row = await dbGet(defaultDb, sql, [id]);
+
+  if (!row) return null;
+  return row;
 }
 
-export function updateTicket(id, updated) {
-  return new Promise((resolve, reject) => {
-    const sql = `
-      UPDATE tickets
-      SET
-        ciName = ?,
-        ciCat = ?,
-        ciSubcat = ?,
-        status = ?,
-        impact = ?,
-        urgency = ?,
-        priority = ?,
-        openTime = ?,
-        resolvedTime = ?,
-        closeTime = ?
-      WHERE id = ?
-    `;
+/**
+ * Atualizar ticket.
+ * Retorna o número de alterações (changes).
+ */
+export async function updateTicket(id, updated) {
+  const sql = `
+    UPDATE tickets
+    SET
+      ciName = ?,
+      ciCat = ?,
+      ciSubcat = ?,
+      status = ?,
+      impact = ?,
+      urgency = ?,
+      priority = ?,
+      openTime = ?,
+      resolvedTime = ?,
+      closeTime = ?
+    WHERE id = ?
+  `;
 
-    const params = [
-      updated.ciName,
-      updated.ciCat,
-      updated.ciSubcat,
-      updated.status,
-      updated.impact,
-      updated.urgency,
-      updated.priority,
-      updated.openTime,
-      updated.resolvedTime,
-      updated.closeTime,
-      id
-    ];
+  const params = [
+    updated.ciName,
+    updated.ciCat,
+    updated.ciSubcat,
+    updated.status,
+    updated.impact,
+    updated.urgency,
+    updated.priority,
+    updated.openTime,
+    updated.resolvedTime,
+    updated.closeTime,
+    id
+  ];
 
-    defaultDb.run(sql, params, function (err) {
-      if (err) return reject(err);
-      resolve(this.changes);
-    });
-  });
+  const result = await dbRun(defaultDb, sql, params);
+  return result.changes;
 }
 
-export function archiveTicket(id) {
-  return new Promise((resolve, reject) => {
-    const sql = 'UPDATE tickets SET archived = 1 WHERE id = ?';
-    defaultDb.run(sql, [id], function (err) {
-      if (err) return reject(err);
-      resolve(this.changes);
-    });
-  });
+/**
+ * Arquivar ticket (soft delete).
+ * Retorna o número de alterações (changes).
+ */
+export async function archiveTicket(id) {
+  const sql = 'UPDATE tickets SET archived = 1 WHERE id = ?';
+  const result = await dbRun(defaultDb, sql, [id]);
+
+  return result.changes;
 }
 
-export function listTickets(whereSql, params, limit, offset) {
-  return new Promise((resolve, reject) => {
-    const sql = `
-      SELECT *
-      FROM tickets
-      ${whereSql}
-      ORDER BY id DESC
-      LIMIT ? OFFSET ?
-    `;
+/**
+ * Listar tickets com filtros + paginação.
+ * Retorna array de tickets.
+ */
+export async function listTickets(whereSql, params, limit, offset) {
+  const sql = `
+    SELECT *
+    FROM tickets
+    ${whereSql}
+    ORDER BY id DESC
+    LIMIT ? OFFSET ?
+  `;
 
-    defaultDb.all(sql, [...params, limit, offset], (err, rows) => {
-      if (err) return reject(err);
-      resolve(rows);
-    });
-  });
+  const rows = await dbAll(defaultDb, sql, [...params, limit, offset]);
+  return rows;
 }
 
-export function countTickets(whereSql, params) {
-  return new Promise((resolve, reject) => {
-    const sql = `
-      SELECT COUNT(*) AS total
-      FROM tickets
-      ${whereSql}
-    `;
+/**
+ * Contar tickets (para paginação).
+ * Retorna total (número).
+ */
+export async function countTickets(whereSql, params) {
+  const sql = `
+    SELECT COUNT(*) AS total
+    FROM tickets
+    ${whereSql}
+  `;
 
-    defaultDb.get(sql, params, (err, row) => {
-      if (err) return reject(err);
-      resolve(row.total);
-    });
-  });
+  const row = await dbGet(defaultDb, sql, params);
+
+  // proteção extra: se row vier null/undefined
+  if (!row || row.total === undefined || row.total === null) return 0;
+
+  return row.total;
 }
-

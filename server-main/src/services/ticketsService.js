@@ -37,9 +37,9 @@ export const getTicketsService = async (query) => {
   if (query.impact) { where.push('impact = ?'); params.push(query.impact); }
   if (query.urgency) { where.push('urgency = ?'); params.push(query.urgency); }
 
-  // Extra (opcionais)
+  // Extra (opcional)
   if (query.ciCat) { where.push('ciCat = ?'); params.push(query.ciCat); }
-  if (query.ciSubcat) { where.push('ciSubcat = ?'); params.push(query.ciSubcat); }
+  
 
   const whereSql = `WHERE ${where.join(' AND ')}`;
 
