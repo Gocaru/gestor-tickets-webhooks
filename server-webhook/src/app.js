@@ -83,5 +83,6 @@ function escapeHtml(str) {
 }
 
 app.listen(PORT, () => {
-  console.log(`Servidor webhook a correr em http://localhost:${PORT}`);
+  console.log(`[SERVER] Servidor webhook a correr em http://localhost:${PORT}`);
+
 });
