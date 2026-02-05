@@ -14,7 +14,10 @@ import { getDb } from './db/database.js';
 import { importTicketsFromCsv } from './services/csvImportService.js';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
+if (!PORT) {
+  throw new Error('PORT is required');
+}
 
 app.use(express.json());
 
@@ -67,7 +70,7 @@ async function startServer() {
       console.log(`[IMPORT] DB já contém ${count} tickets — import ignorado`);
     }
 
-    app.listen(PORT, () => {
+    app.listen(Number(PORT), () => {
       console.log(`[SERVER] Servidor principal a correr em http://localhost:${PORT}`);
     });
   } catch (err) {

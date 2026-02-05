@@ -38,6 +38,7 @@ cd ../server-webhook
 npm install
 
 ### 2) Configurar variáveis de ambiente (.env)
+PORT é obrigatório em ambos os servidores (não existe fallback no código).
 Criar um ficheiro .env em cada servidor com a mesma WEBHOOK_SECRET.
 
 server-main/.env:
@@ -51,12 +52,16 @@ WEBHOOK_SECRET=minha-chave-super-secreta
 
 ### 3) Iniciar os servidores (terminais separados)
 Servidor principal:
+```bash
 cd server-main
 npm run dev
+```
 
 Servidor webhook:
+```bash
 cd server-webhook
 npm start
+```
 
 ### 4) Endereços úteis
 - API principal: http://localhost:3000
