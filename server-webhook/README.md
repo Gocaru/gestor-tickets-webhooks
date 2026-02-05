@@ -10,7 +10,7 @@ Copiar o ficheiro de exemplo e ajustar:
 cp .env.example .env
 ```
 
-- `PORT` — porta do servidor (por defeito, 4000)
+- `PORT` — porta do servidor (obrigatória)
 - `WEBHOOK_SECRET` — deve ser **igual** ao do servidor principal
 
 ## Segurança (validação de assinatura)
@@ -23,3 +23,8 @@ O endpoint `POST /webhooks` valida o header `X-Webhook-Signature`.
 Assinatura esperada:
 
 `sha256=<hex>` onde `<hex>` é o HMAC-SHA256 do corpo JSON bruto do webhook.
+
+Arranque via terminal (com .env configurado):
+```bash
+npm start
+```

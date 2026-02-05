@@ -4,9 +4,11 @@ API REST para gestão de tickets e emissão de notificações via webhooks.
 
 ## Variáveis de ambiente
 
+`PORT` é obrigatório (não existe fallback no código).
+
 Criar/editar o ficheiro `.env`:
 
-- `PORT` — porta do servidor (por defeito, 3000)
+- `PORT` — porta do servidor (obrigatória)
 - `WEBHOOK_SECRET` — chave secreta partilhada para assinatura dos webhooks
 
 Exemplo:
@@ -14,6 +16,11 @@ Exemplo:
 ```
 PORT=3000
 WEBHOOK_SECRET=minha-chave-super-secreta
+```
+
+Arranque via terminal (com .env configurado):
+```bash
+npm run dev
 ```
 
 ## Segurança (assinatura de webhooks)

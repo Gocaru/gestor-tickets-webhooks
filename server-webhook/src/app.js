@@ -3,7 +3,10 @@ import 'dotenv/config';
 import crypto from 'crypto';
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT;
+if (!PORT) {
+  throw new Error('PORT is required');
+}
 
 // Guardar o corpo bruto para permitir validação de assinatura (HMAC)
 app.use(
@@ -82,7 +85,7 @@ function escapeHtml(str) {
   return str.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 }
 
-app.listen(PORT, () => {
+app.listen(Number(PORT), () => {
   console.log(`[SERVER] Servidor webhook a correr em http://localhost:${PORT}`);
 
 });
