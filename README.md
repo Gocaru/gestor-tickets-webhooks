@@ -23,6 +23,7 @@ Projeto académico em Node.js com dois servidores independentes:
 - npm
 - Postman (recomendado para testes)
 - Browser (para Swagger Editor)
+- Link do ficheiro .csv https://www.kaggle.com/datasets/ahanwadi/itsm-data 
 
 ---
 
