@@ -1,6 +1,8 @@
-import { db } from './database.js';
+// src/db/initDb.js
+import { getDb } from './database.js';
+import { dbExec } from './sqliteAsync.js';
 
-export function initDb() {
+export async function initDb() {
   const sql = `
     CREATE TABLE IF NOT EXISTS tickets (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,14 +35,11 @@ export function initDb() {
       ON webhooks(url, event);
   `;
 
-  return new Promise((resolve, reject) => {
-    db.exec(sql, (err) => {
-      if (err) {
-        console.error('Erro a criar tabelas:', err.message);
-        return reject(err);
-      }
-      console.log('Tabelas tickets + webhooks prontas.');
-      resolve();
-    });
-  });
+  try {
+    await dbExec(getDb(), sql);
+    console.log('[DB] Tabelas tickets + webhooks prontas.');
+  } catch (err) {
+    console.error('[DB] Erro a criar tabelas:', err.message);
+    throw err;
+  }
 }

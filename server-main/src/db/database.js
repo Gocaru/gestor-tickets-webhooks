@@ -11,10 +11,10 @@ const dbPath = path.join(dirname, '../../tickets.db');
 // ✅ Instância única
 export const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
-    console.error('Erro ao abrir a base de dados:', err.message);
+    console.error('[DB] Erro ao abrir a base de dados:', err.message);
     return;
   }
-  console.log('Base de dados SQLite ligada com sucesso.');
+  console.log('[DB] Base de dados SQLite ligada com sucesso.');
 });
 
 // ✅ Getter (para evitar imports inconsistentes)

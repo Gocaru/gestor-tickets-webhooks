@@ -81,7 +81,7 @@ paths:
           name: urgency
           schema:
             type: string
-            enum: ['1', '2', '3', '4', '5', '5 - Very Low']
+            enum: ['1', '2', '3', '4', '5']
           description: Urgência do ticket
 
         - in: query
