@@ -23,10 +23,14 @@ app.use(express.json());
 
 // CORS (Swagger Editor / Petstore)
 app.use(cors({
-  origin: [
-    'https://editor.swagger.io',
-    'https://petstore.swagger.io'
-  ],
+  origin: (origin, callback) => {
+    const allowed = ['https://editor.swagger.io', 'https://petstore.swagger.io'];
+    if (!origin || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1') || allowed.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Accept', 'Authorization'],
 }));

@@ -32,7 +32,7 @@ export const getTicketsService = async (query) => {
   const params = [archived];
 
   // Mínimo 4 filtros
-  if (query.status) { where.push('status = ?'); params.push(query.status); }
+  if (query.status) { where.push('LOWER(status) = LOWER(?)'); params.push(query.status); }
   if (query.priority) { where.push('priority = ?'); params.push(query.priority); }
   if (query.impact) { where.push('impact = ?'); params.push(query.impact); }
   if (query.urgency) { where.push('urgency = ?'); params.push(query.urgency); }
