@@ -23,12 +23,9 @@ app.use(express.json());
 
 // CORS (Swagger Editor / Petstore)
 app.use(cors({
-  origin: [
-    'https://editor.swagger.io',
-    'https://petstore.swagger.io'
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Accept', 'Authorization'],
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 // Se quiser garantir preflight sempre OK:
