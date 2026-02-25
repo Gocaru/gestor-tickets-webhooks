@@ -23,7 +23,6 @@ app.use(express.json());
 
 // CORS (Swagger Editor / Petstore)
 app.use(cors({
-<<<<<<< HEAD
   origin: (origin, callback) => {
     const allowed = ['https://editor.swagger.io', 'https://petstore.swagger.io'];
     if (!origin || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1') || allowed.includes(origin)) {
@@ -34,11 +33,6 @@ app.use(cors({
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Accept', 'Authorization'],
-=======
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
->>>>>>> 0995a8a0ee88c4cecc8c9166da2d4b7543905c0d
 }));
 
 // Se quiser garantir preflight sempre OK:
