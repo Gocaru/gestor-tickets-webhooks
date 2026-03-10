@@ -1,5 +1,4 @@
 // src/repositories/ticketsRepository.js
-
 import { db as defaultDb } from '../db/database.js';
 import { dbRun, dbGet, dbAll } from '../db/sqliteAsync.js';
 
@@ -51,9 +50,9 @@ export async function createTicket(ticket) {
       ciName, ciCat, ciSubcat,
       status, impact, urgency, priority,
       openTime, resolvedTime, closeTime,
-      archived
+      archived, owner_id
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
   `;
 
   const params = [
@@ -66,7 +65,8 @@ export async function createTicket(ticket) {
     ticket.priority || null,
     ticket.openTime || new Date().toISOString(),
     ticket.resolvedTime || null,
-    ticket.closeTime || null
+    ticket.closeTime || null,
+    ticket.owner_id || null,
   ];
 
   const result = await dbRun(defaultDb, sql, params);
@@ -80,7 +80,6 @@ export async function createTicket(ticket) {
 export async function getTicketById(id) {
   const sql = 'SELECT * FROM tickets WHERE id = ?';
   const row = await dbGet(defaultDb, sql, [id]);
-
   if (!row) return null;
   return row;
 }
@@ -131,7 +130,6 @@ export async function updateTicket(id, updated) {
 export async function archiveTicket(id) {
   const sql = 'UPDATE tickets SET archived = 1 WHERE id = ?';
   const result = await dbRun(defaultDb, sql, [id]);
-
   return result.changes;
 }
 
@@ -165,8 +163,6 @@ export async function countTickets(whereSql, params) {
 
   const row = await dbGet(defaultDb, sql, params);
 
-  // proteção extra: se row vier null/undefined
   if (!row || row.total === undefined || row.total === null) return 0;
-
   return row.total;
 }

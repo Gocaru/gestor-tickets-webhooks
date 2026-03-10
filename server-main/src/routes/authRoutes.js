@@ -135,7 +135,7 @@ router.post('/login', loginLimiter, async (req, res) => {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: false,       // mudar para true em produção (HTTPS)
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -199,7 +199,7 @@ router.post('/logout', (req, res) => {
   res.clearCookie('refreshToken', {
     httpOnly: true,
     secure: false,
-    sameSite: 'strict',
+    sameSite: 'lax',
   });
   res.json({ message: 'Logout efetuado com sucesso' });
 });
