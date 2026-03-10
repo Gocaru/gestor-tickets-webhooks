@@ -8,6 +8,8 @@
 // - disparar webhooks quando aplicável
 //
 
+import { auditLog } from '../services/auditService.js';
+
 import {
   createTicketService,
   getTicketsService,
@@ -29,6 +31,7 @@ import { notifyWebhooks } from '../services/webhookDispatcher.js';
  * Criar um novo ticket.
  *
  * - Valida o corpo do pedido
+ * - Associa o ticket ao utilizador autenticado (owner_id)
  * - Cria o ticket via service
  * - Dispara o webhook "ticket.created"
  */
@@ -41,12 +44,17 @@ export const createTicket = async (req, res) => {
       return res.status(400).json({ message: 'Invalid request body' });
     }
 
+    // Associar o ticket ao utilizador autenticado
+    ticketData.owner_id = req.user.userId;
+
     // Criação do ticket (lógica de negócio no service)
     const created = await createTicketService(ticketData);
 
     // 🔔 Notificar webhooks de forma assíncrona
-    // Não bloqueia a resposta HTTP
     notifyWebhooks('ticket.created', created).catch(console.error);
+
+    // 📋 Registar no audit log
+    auditLog(req.user.userId, 'ticket.created', `ticket:${created.id}`, 'success', req.ip);
 
     // Resposta HTTP 201 (Created)
     return res.status(201).json(created);
@@ -59,12 +67,20 @@ export const createTicket = async (req, res) => {
 /**
  * Listar tickets com paginação e filtros.
  *
- * - Os filtros são recebidos via query string
- * - A lógica de construção do WHERE está no service
+ * - users veem apenas os seus próprios tickets (IDOR)
+ * - agents e admins veem todos
  */
 export const getTickets = async (req, res) => {
   try {
-    const result = await getTicketsService(req.query);
+    const { role, userId } = req.user;
+
+    // Se for user normal, forçar filtro pelo seu owner_id
+    const filters = {
+      ...req.query,
+      ...(role === 'user' ? { owner_id: userId } : {}),
+    };
+
+    const result = await getTicketsService(filters);
     return res.status(200).json(result);
   } catch (err) {
     console.error('[TICKETS] Erro ao listar tickets:', err.message);
@@ -74,6 +90,10 @@ export const getTickets = async (req, res) => {
 
 /**
  * Obter um ticket específico pelo ID.
+ *
+ * - users só podem ver os seus próprios tickets (IDOR)
+ * - agents e admins podem ver qualquer ticket
+ * - Responde 404 em vez de 403 para não expor existência do recurso
  */
 export const getTicketById = async (req, res) => {
   try {
@@ -88,6 +108,13 @@ export const getTicketById = async (req, res) => {
 
     // Ticket não encontrado
     if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    // IDOR: user só pode ver o seu próprio ticket
+    // Responde 404 em vez de 403 para não revelar que o ticket existe
+    const { role, userId } = req.user;
+    if (role === 'user' && ticket.owner_id !== userId) {
       return res.status(404).json({ message: 'Ticket not found' });
     }
 
@@ -136,6 +163,9 @@ export const updateTicket = async (req, res) => {
       changes: result.changes,
     }).catch(console.error);
 
+    // 📋 Registar no audit log
+    auditLog(req.user.userId, 'ticket.updated', `ticket:${id}`, 'success', req.ip);
+
     return res.status(200).json(updated);
   } catch (err) {
     console.error('[TICKETS] Erro ao atualizar ticket:', err.message);
@@ -166,6 +196,9 @@ export const archiveTicket = async (req, res) => {
 
     // 🔔 Notificar webhooks
     notifyWebhooks('ticket.archived', archived).catch(console.error);
+
+    // 📋 Registar no audit log
+    auditLog(req.user.userId, 'ticket.archived', `ticket:${id}`, 'success', req.ip);
 
     return res.status(200).json({
       message: 'Ticket archived',

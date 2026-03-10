@@ -20,6 +20,7 @@ export const createTicketService = async (ticketData) => {
  * Listar tickets com paginação + filtros (mínimo 4).
  * Filtros suportados: status, priority, impact, urgency (e ainda ciCat, ciSubcat).
  * Por defeito, não lista arquivados (archived=0).
+ * Se owner_id for passado, filtra apenas os tickets desse utilizador (IDOR).
  */
 export const getTicketsService = async (query) => {
   const limit = Number(query.limit) > 0 ? Number(query.limit) : 20;
@@ -31,18 +32,19 @@ export const getTicketsService = async (query) => {
   const where = ['COALESCE(archived, 0) = ?'];
   const params = [archived];
 
+  // IDOR: filtrar por dono se passado pelo controller
+  if (query.owner_id) { where.push('owner_id = ?'); params.push(query.owner_id); }
+
   // Mínimo 4 filtros
-  if (query.status) { where.push('LOWER(status) = LOWER(?)'); params.push(query.status); }
+  if (query.status)   { where.push('LOWER(status) = LOWER(?)'); params.push(query.status); }
   if (query.priority) { where.push('priority = ?'); params.push(query.priority); }
-  if (query.impact) { where.push('impact = ?'); params.push(query.impact); }
-  if (query.urgency) { where.push('urgency = ?'); params.push(query.urgency); }
+  if (query.impact)   { where.push('impact = ?'); params.push(query.impact); }
+  if (query.urgency)  { where.push('urgency = ?'); params.push(query.urgency); }
 
   // Extra (opcional)
-  if (query.ciCat) { where.push('ciCat = ?'); params.push(query.ciCat); }
-  
+  if (query.ciCat)    { where.push('ciCat = ?'); params.push(query.ciCat); }
 
   const whereSql = `WHERE ${where.join(' AND ')}`;
-
   const total = await countTickets(whereSql, params);
   const tickets = await listTickets(whereSql, params, limit, offset);
 
@@ -65,18 +67,16 @@ export const updateTicketService = async (id, ticketData) => {
   if (!existing) return null;
 
   const updated = {
-    ciName: ticketData.ciName !== undefined ? ticketData.ciName : existing.ciName,
-    ciCat: ticketData.ciCat !== undefined ? ticketData.ciCat : existing.ciCat,
-    ciSubcat: ticketData.ciSubcat !== undefined ? ticketData.ciSubcat : existing.ciSubcat,
-
-    status: ticketData.status !== undefined ? ticketData.status : existing.status,
-    impact: ticketData.impact !== undefined ? ticketData.impact : existing.impact,
-    urgency: ticketData.urgency !== undefined ? ticketData.urgency : existing.urgency,
-    priority: ticketData.priority !== undefined ? ticketData.priority : existing.priority,
-
-    openTime: ticketData.openTime !== undefined ? ticketData.openTime : existing.openTime,
+    ciName:       ticketData.ciName       !== undefined ? ticketData.ciName       : existing.ciName,
+    ciCat:        ticketData.ciCat        !== undefined ? ticketData.ciCat        : existing.ciCat,
+    ciSubcat:     ticketData.ciSubcat     !== undefined ? ticketData.ciSubcat     : existing.ciSubcat,
+    status:       ticketData.status       !== undefined ? ticketData.status       : existing.status,
+    impact:       ticketData.impact       !== undefined ? ticketData.impact       : existing.impact,
+    urgency:      ticketData.urgency      !== undefined ? ticketData.urgency      : existing.urgency,
+    priority:     ticketData.priority     !== undefined ? ticketData.priority     : existing.priority,
+    openTime:     ticketData.openTime     !== undefined ? ticketData.openTime     : existing.openTime,
     resolvedTime: ticketData.resolvedTime !== undefined ? ticketData.resolvedTime : existing.resolvedTime,
-    closeTime: ticketData.closeTime !== undefined ? ticketData.closeTime : existing.closeTime
+    closeTime:    ticketData.closeTime    !== undefined ? ticketData.closeTime    : existing.closeTime,
   };
 
   const changes = await updateTicket(id, updated);
@@ -88,10 +88,8 @@ export const updateTicketService = async (id, ticketData) => {
   // Contexto útil para webhooks: antes/depois + campos alterados
   const changedFields = {};
   Object.keys(after).forEach((key) => {
-    // Ignorar alterações técnicas se existirem no futuro
     const beforeValue = existing[key];
     const afterValue = after[key];
-
     if (beforeValue !== afterValue) {
       changedFields[key] = { from: beforeValue, to: afterValue };
     }

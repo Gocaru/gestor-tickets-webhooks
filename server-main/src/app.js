@@ -1,13 +1,15 @@
 import cors from 'cors';
 import express from 'express';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import 'dotenv/config';
-
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 import healthRoutes from './routes/healthRoutes.js';
 import ticketsRoutes from './routes/ticketsRoutes.js';
 import webhooksRoutes from './routes/webhooksRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 
 import { initDb } from './db/initDb.js';
 import { getDb } from './db/database.js';
@@ -19,6 +21,8 @@ if (!PORT) {
   throw new Error('PORT is required');
 }
 
+app.use(helmet());
+app.use(cookieParser());
 app.use(express.json());
 
 // CORS (Swagger Editor / Petstore)
@@ -33,12 +37,14 @@ app.use(cors({
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Accept', 'Authorization'],
+  credentials: true,
 }));
 
 // Se quiser garantir preflight sempre OK:
 // app.options('*', cors());
 
 app.use('/health', healthRoutes);
+app.use('/auth', authRoutes);
 app.use('/api/tickets', ticketsRoutes);
 app.use('/api/webhooks', webhooksRoutes);
 

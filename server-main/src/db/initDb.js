@@ -23,21 +23,18 @@ export async function initDb() {
   const sql = `
     CREATE TABLE IF NOT EXISTS tickets (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-
       ciName TEXT,
       ciCat TEXT,
       ciSubcat TEXT,
-
       status TEXT,
       impact TEXT,
       urgency TEXT,
       priority TEXT,
-
       openTime TEXT,
       resolvedTime TEXT,
       closeTime TEXT,
-
-      archived INTEGER DEFAULT 0
+      archived INTEGER DEFAULT 0,
+      owner_id INTEGER REFERENCES users(id)
     );
 
     CREATE TABLE IF NOT EXISTS webhooks (
@@ -52,6 +49,25 @@ export async function initDb() {
     -- (mesma URL + mesmo evento)
     CREATE UNIQUE INDEX IF NOT EXISTS idx_webhooks_url_event
       ON webhooks(url, event);
+
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT NOT NULL UNIQUE,
+      password TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'user',
+      token_version INTEGER DEFAULT 0,
+      createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS audit_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      userId INTEGER,
+      action TEXT NOT NULL,
+      target TEXT,
+      result TEXT NOT NULL,
+      ip TEXT,
+      timestamp TEXT DEFAULT CURRENT_TIMESTAMP
+    );
   `;
 
   try {
@@ -59,7 +75,7 @@ export async function initDb() {
     await dbExec(getDb(), sql);
 
     // Log informativo de sucesso
-    console.log('[DB] Tabelas tickets + webhooks prontas.');
+    console.log('[DB] Tabelas tickets + webhooks + users + audit_log prontas.');
   } catch (err) {
     // Log claro em caso de falha
     console.error('[DB] Erro a criar tabelas:', err.message);
