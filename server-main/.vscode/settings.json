@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/46115867-2b45-4a32-821a-e9f2410a6658/resourceGroups/UpSkill/providers/Microsoft.Web/sites/259GestorTicketsMain",
+    "appService.deploySubpath": "."
+}
