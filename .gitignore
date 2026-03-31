@@ -6,4 +6,4 @@ npm-debug.log
 *.docx
 *.db
 *.db-journal
-*.csv
+*.csvserver-main/coverage/
