@@ -1,11 +1,11 @@
-name: Node.js CI
+name: Acceptance Tests
 
 on:
   push:
-    branches: ["**"]
+    branches: ["feature/unit-tests"]
 
 jobs:
-  test:
+  acceptance:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,6 +21,6 @@ jobs:
         run: npm install
         working-directory: server-main
 
-      - name: Correr testes unitários
-        run: node --experimental-vm-modules node_modules/.bin/jest --runInBand --testPathPattern="tests/(ticketsService|webhooksService|webhookDispatcher)"
+      - name: Correr testes de aceitação
+        run: node --experimental-vm-modules node_modules/.bin/jest --runInBand --testPathPattern="tests/acceptance"
         working-directory: server-main
