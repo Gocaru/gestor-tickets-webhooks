@@ -1,11 +1,14 @@
-name: Testes Unitários
+name: Testes Unitários e Aceitação
 
 on:
   push:
     branches: ["**"]
+  pull_request:
+    branches: ["**"]
 
 jobs:
-  test:
+  unit-tests:
+    name: Testes Unitários
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código
@@ -20,6 +23,33 @@ jobs:
         working-directory: ./server-main
         run: npm install
 
-      - name: Correr testes
+      - name: Correr testes unitários
         working-directory: ./server-main
         run: npm test
+
+  acceptance-tests:
+    name: Testes de Aceitação
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependências
+        working-directory: ./server-main
+        run: npm install
+
+      - name: Iniciar servidor em background
+        working-directory: ./server-main
+        run: npm start &
+
+      - name: Aguardar servidor estar pronto
+        run: npx wait-on http://localhost:3000/health --timeout 30000
+
+      - name: Correr testes de aceitação
+        working-directory: ./server-main
+        run: npm run test:acceptance

@@ -23,7 +23,8 @@
     "start": "node src/app.js",
     "dev": "node --watch src/app.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
-    "import:csv": "node src/scripts/importCsv.js"
+    "import:csv": "node src/scripts/importCsv.js",
+    "test:acceptance": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=acceptance --no-coverage"
   },
   "dependencies": {
     "better-sqlite3": "^12.6.2",
@@ -35,6 +36,7 @@
   },
   "devDependencies": {
     "@jest/globals": "^30.3.0",
-    "jest": "^30.3.0"
+    "jest": "^30.3.0",
+    "supertest": "^7.2.2"
   }
 }
