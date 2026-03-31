@@ -29,9 +29,8 @@
     "testEnvironment": "node",
     "testMatch": [
       "**/tests/**/*.test.js"
-    ],
-    "testPathIgnorePatterns": ["/node_modules/", "/gestor-tickets-webhooks/"   ]
-  },
+    ]
+ },
   "dependencies": {
     "better-sqlite3": "^12.6.2",
     "cors": "^2.8.6",
