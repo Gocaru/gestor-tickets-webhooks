@@ -22,7 +22,7 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "node --watch src/app.js",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --testPathIgnorePatterns=acceptance",
     "import:csv": "node src/scripts/importCsv.js",
     "test:acceptance": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=acceptance --no-coverage"
   },
