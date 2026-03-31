@@ -22,5 +22,5 @@ jobs:
         working-directory: server-main
 
       - name: Correr testes unitários
-        run: node --experimental-vm-modules node_modules/.bin/jest --runInBand --testPathPattern="tests/(ticketsService|webhooksService|webhookDispatcher)"
+        run: node --experimental-vm-modules node_modules/.bin/jest --runInBand --testPathPatterns="tests/(ticketsService|webhooksService|webhookDispatcher)"
         working-directory: server-main

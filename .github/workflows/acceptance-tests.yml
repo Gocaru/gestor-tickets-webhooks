@@ -22,5 +22,5 @@ jobs:
         working-directory: server-main
 
       - name: Correr testes de aceitação
-        run: node --experimental-vm-modules node_modules/.bin/jest --runInBand --testPathPattern="tests/acceptance"
+        run: node --experimental-vm-modules node_modules/.bin/jest --runInBand --testPathPatterns="tests/acceptance"
         working-directory: server-main
