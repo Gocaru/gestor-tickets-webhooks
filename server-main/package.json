@@ -26,9 +26,12 @@
     "import:csv": "node src/scripts/importCsv.js"
   },
   "jest": {
-  "testEnvironment": "node",
-  "testMatch": ["**/tests/**/*.test.js"]
-},
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "testPathIgnorePatterns": ["/node_modules/", "/gestor-tickets-webhooks/"   ]
+  },
   "dependencies": {
     "better-sqlite3": "^12.6.2",
     "cors": "^2.8.6",
@@ -38,6 +41,7 @@
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
-    "jest": "^30.3.0"
+    "jest": "^30.3.0",
+    "supertest": "^7.2.2"
   }
 }
