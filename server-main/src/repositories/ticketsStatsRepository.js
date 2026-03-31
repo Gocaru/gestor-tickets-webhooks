@@ -1,5 +1,6 @@
 // src/repositories/ticketsStatsRepository.js
 
+import { db as defaultDb } from '../db/database.js';
 import { dbAll } from '../db/sqliteAsync.js';
 
 /**
@@ -13,7 +14,9 @@ export async function getStatsByStatus() {
     GROUP BY status
     ORDER BY total DESC
   `;
-  return await dbAll(null, sql, []);
+
+  const rows = await dbAll(defaultDb, sql, []);
+  return rows;
 }
 
 /**
@@ -27,7 +30,9 @@ export async function getStatsByPriority() {
     GROUP BY priority
     ORDER BY total DESC
   `;
-  return await dbAll(null, sql, []);
+
+  const rows = await dbAll(defaultDb, sql, []);
+  return rows;
 }
 
 /**
@@ -41,5 +46,7 @@ export async function getStatsByCiCat() {
     GROUP BY ciCat
     ORDER BY total DESC
   `;
-  return await dbAll(null, sql, []);
+
+  const rows = await dbAll(defaultDb, sql, []);
+  return rows;
 }

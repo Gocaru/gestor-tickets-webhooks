@@ -28,12 +28,7 @@ export function importTicketsFromCsv(db, csvFilePath) {
     let processed = 0;
     let inserted = 0;
 
-    const stream = fs.createReadStream(csvFilePath).pipe(csv({
-  mapHeaders: ({ header }) => header.trim(),
-  strict: false,
-  quote: '"',
-  escape: '"',
-}));
+    const stream = fs.createReadStream(csvFilePath).pipe(csv());
 
     stream.on('data', async (row) => {
       stream.pause();

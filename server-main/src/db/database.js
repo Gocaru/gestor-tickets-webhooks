@@ -1,48 +1,33 @@
-// src/db/database.js
-//
-// Ligação ao Azure SQL Server usando o driver mssql.
-// Substitui a ligação SQLite anterior.
-//
+import sqlite3 from 'sqlite3';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-import sql from 'mssql';
+const filename = fileURLToPath(import.meta.url);
+const dirname = path.dirname(filename);
 
-// Configuração da ligação ao Azure SQL
-const config = {
-  server: process.env.DB_SERVER,
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  port: 1433,
-  options: {
-    encrypt: true,           // Obrigatório no Azure SQL
-    trustServerCertificate: false,
-  },
-  pool: {
-    max: 10,                 // Máximo de ligações simultâneas
-    min: 0,
-    idleTimeoutMillis: 30000
+// ✅ Caminho absoluto e consistente para a DB (server-main/tickets.db)
+const dbPath = path.join(dirname, '../../tickets.db');
+
+// ✅ Instância única
+export const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('[DB] Erro ao abrir a base de dados:', err.message);
+    return;
   }
-};
+  console.log('[DB] Base de dados SQLite ligada com sucesso.');
+});
 
-// Pool de ligações — equivalente ao singleton do SQLite
-let pool = null;
-
-export async function getDb() {
-  if (!pool) {
-    pool = await sql.connect(config);
-    console.log('[DB] Ligação ao Azure SQL estabelecida com sucesso.');
-  }
-  return pool;
+// ✅ Getter (para evitar imports inconsistentes)
+export function getDb() {
+  return db;
 }
 
-// Exporta o sql para usar nos repositórios
-export { sql };
-
-// Fecho limpo quando a aplicação termina
-process.on('SIGINT', async () => {
-  if (pool) {
-    await pool.close();
-    console.log('[DB] Ligação ao Azure SQL fechada.');
-  }
-  process.exit(0);
+// ✅ Fecho limpo (reduz ficheiros -journal pendurados)
+process.on('SIGINT', () => {
+  db.close((err) => {
+    if (err) console.error('Erro ao fechar a base de dados:', err.message);
+    else console.log('Base de dados SQLite fechada com sucesso.');
+    process.exit(0);
+  });
 });
+
