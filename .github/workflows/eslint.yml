@@ -1,0 +1,34 @@
+name: ESLint
+
+on:
+  push:
+    branches: ["versao-sqlite-filipe"]
+  pull_request:
+    branches: ["versao-sqlite-filipe"]
+
+jobs:
+  eslint:
+    name: Run eslint scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./server-main
+        run: npm install
+
+      - name: Install ESLint
+        working-directory: ./server-main
+        run: npm install eslint@8.10.0
+
+      - name: Run ESLint
+        working-directory: ./server-main
+        run: npx eslint src/
+        continue-on-error: true
