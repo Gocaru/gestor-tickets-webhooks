@@ -86,7 +86,7 @@ describe('[Integração] getTicketsService', () => {
   });
 
   test('não deve listar tickets arquivados por defeito', async () => {
-    const t1 = await createTicketService({ ciName: 'Ativo',     status: 'Open' });
+    await createTicketService({ ciName: 'Ativo', status: 'Open' });
     const t2 = await createTicketService({ ciName: 'Arquivado', status: 'Open' });
     await archiveTicketService(t2.id);
 

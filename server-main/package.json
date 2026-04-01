@@ -22,6 +22,7 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "node --watch src/app.js",
+    "lint": "eslint src/",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "import:csv": "node src/scripts/importCsv.js"
   },
@@ -34,6 +35,8 @@
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.1.0",
     "jest": "^30.3.0",
     "supertest": "^7.2.2"
   }
