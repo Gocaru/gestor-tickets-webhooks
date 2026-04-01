@@ -1,0 +1,22 @@
+# Node.js - Testes Unitarios
+trigger:
+- versao-sqlite-larissa
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '20.x'
+  displayName: 'Instalar Node.js'
+
+- script: |
+    cd server-main
+    npm install
+  displayName: 'Instalar dependencias'
+
+- script: |
+    cd server-main
+    npm test
+  displayName: 'Correr testes unitarios'
