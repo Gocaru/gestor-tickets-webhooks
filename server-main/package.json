@@ -24,7 +24,8 @@
     "dev": "node --watch src/app.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --testPathIgnorePatterns=acceptance",
     "import:csv": "node src/scripts/importCsv.js",
-    "test:acceptance": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=acceptance --no-coverage"
+    "test:acceptance": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=acceptance --no-coverage",
+    "lint": "eslint src/**/*.js --ignore-pattern src/__tests__ --no-warn-ignored"
   },
   "dependencies": {
     "better-sqlite3": "^12.6.2",
@@ -35,7 +36,9 @@
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@jest/globals": "^30.3.0",
+    "eslint": "^10.1.0",
     "jest": "^30.3.0",
     "supertest": "^7.2.2"
   }

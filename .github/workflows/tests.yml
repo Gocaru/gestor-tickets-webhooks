@@ -1,4 +1,4 @@
-name: Testes Unitários e Aceitação
+name: Testes Unitários, Aceitação e Linting
 
 on:
   push:
@@ -7,6 +7,26 @@ on:
     branches: ["**"]
 
 jobs:
+  lint:
+    name: Análise de Código (ESLint)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependências
+        working-directory: ./server-main
+        run: npm install
+
+      - name: Correr ESLint
+        working-directory: ./server-main
+        run: npm run lint
+
   unit-tests:
     name: Testes Unitários
     runs-on: ubuntu-latest
